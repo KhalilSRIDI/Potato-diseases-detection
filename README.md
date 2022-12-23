@@ -11,10 +11,8 @@ Our dataset is split into 3 classes: Healthy with 152 images, early blight and l
 This shows a clear imbalance in our dataset!
 ![Dataset distibution](https://github.com/KhalilSRIDI/Potato-diseases-detection/blob/main/Readme%20images/datasetimabalance.png)
 
-Here are some examples images of our dataset
-
+Here are some example images of our dataset
 ![Dataset exemples](https://github.com/KhalilSRIDI/Potato-diseases-detection/blob/main/Readme%20images/examples.png)
-
 
 ## Data Preprocessing
 Our initial assumption is that, because we are working on images, we might need to apply some image processing techniques to help improve the model performance later on.
