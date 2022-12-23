@@ -25,8 +25,11 @@ This showed us that there will be no clear improvement as the disease spots are 
 We moved on and applied 2 segmentation techniques to our images:
 The first one is a normal segmentation where we removed the background.
 ![Segmentation](https://github.com/KhalilSRIDI/Potato-diseases-detection/blob/main/Readme%20images/segmentation.png)
+
 The second one is a segmentation into the HSV colour space.
-![Segmentation HSV](https://github.com/KhalilSRIDI/Potato-diseases-detection/blob/main/Readme%20images/HSV Segmentation.png)
+
+![Segmentation HSV](https://github.com/KhalilSRIDI/Potato-diseases-detection/blob/main/Readme%20images/HSVSegmentation.png)
+
 ## Modeling
 For the modeling phase, we worked simultaneously on a model from scratch and some pretrained models.
 You can use the scripts to run all the models that we worked on.
