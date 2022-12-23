@@ -19,11 +19,13 @@ Our initial assumption is that, because we are working on images, we might need 
 ### Greyscale
 We started by applying a greyscale filter that yielded images like the following:
 ![Greyscale image](https://github.com/KhalilSRIDI/Potato-diseases-detection/blob/main/Readme%20images/greyscale.png)
+
 This showed us that there will be no clear improvement as the disease spots are not more clear in the greyscale colour space.
 
 ### Segmentation
 We moved on and applied 2 segmentation techniques to our images:
 The first one is a normal segmentation where we removed the background.
+
 ![Segmentation](https://github.com/KhalilSRIDI/Potato-diseases-detection/blob/main/Readme%20images/segmentation.png)
 
 The second one is a segmentation into the HSV colour space.
