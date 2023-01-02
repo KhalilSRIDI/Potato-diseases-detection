@@ -12,13 +12,16 @@ from tensorflow.keras import Sequential
 from tensorflow.keras import backend as K
 from tensorflow.keras.applications import EfficientNetB5
 from tensorflow.keras.applications.imagenet_utils import preprocess_input
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint,ReduceLROnPlateau, TensorBoard
+from tensorflow.keras.callbacks import (EarlyStopping, ModelCheckpoint,
+                                        ReduceLROnPlateau, TensorBoard)
 from tensorflow.keras.layers import *
 from tensorflow.keras.layers.experimental import preprocessing
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.preprocessing import image as image_utils
-from tensorflow.keras.preprocessing.image import ImageDataGenerator,img_to_array
+from tensorflow.keras.preprocessing import image_dataset_from_directory
+from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
+                                                  img_to_array)
 
 
 def show_image(image_path):
@@ -76,42 +79,23 @@ depth=3
 IMG_SIZE = 224
 NUM_CLASSES = 3
 
-def load_data(zr=0.2,hf=True,rr=15,vf=True,vs=0.2,train_path="/content/drive/MyDrive/Private Data Split_train_test_val/train",val_path="/content/drive/MyDrive/Private Data Split_train_test_val/val"):
-    """function to generate the dategen
+def load_data(train_dir = "/content/drive/MyDrive/Private Data Split_train_test_val/train",val_dir = "/content/drive/MyDrive/Private Data Split_train_test_val/val",test_dir  = "/content/drive/MyDrive/Private Data Split_train_test_val/test"):
+    """
+    function to load the data
     
     Keyword arguments:
-    zr -- zoom range (float default 0.2)
-    hf -- horizental flip (default=true)
-    rr -- rotation range (default=15 degrees)
-    vf -- vertical flip (default=true)
-    vs -- validation split (default=0.2)
-    train_path -- the path for the dataset to use for training
-    test_path -- the path for the dataset to use for testing
-    Return: return training set and testing set
+    train_dir -- the path for the dataset to use for training
+    test_dir -- the path for the dataset to use for testing
+    val_dir -- the path for the dataset to use for validation
+
+    Return: return training set, testing set and validation set
     """
+     
+    train_data = image_dataset_from_directory(train_dir,label_mode="categorical",image_size = (IMG_SIZE,IMG_SIZE),batch_size = BS,seed = 42,shuffle = True)
+    val_data = image_dataset_from_directory(val_dir,label_mode="categorical",image_size = (IMG_SIZE,IMG_SIZE),batch_size = BS,seed = 42,shuffle = False)
+    test_data = image_dataset_from_directory(test_dir,label_mode="categorical",image_size = (IMG_SIZE,IMG_SIZE),batch_size = BS,seed = 42,shuffle = False)
     
-    datagen = ImageDataGenerator(#rescale = 1./255,
-                              #     shear_range = 0.2,
-                                  zoom_range = zr,
-                                  horizontal_flip = hf,
-                                 #  width_shift_range=0.2,
-                                  # height_shift_range=0.2,
-                                   rotation_range=rr,
-                                   vertical_flip=vf,
-                                   #fill_mode='reflect',
-                                   #data_format='channels_last',
-                                   brightness_range=[0.5, 1.5],validation_split=vs)
-        
-    training_set = datagen.flow_from_directory(train_path,
-                                                 target_size = (IMG_SIZE, IMG_SIZE),
-                                                 batch_size = BS,
-                                                 class_mode = 'categorical',color_mode="rgb",interpolation = "nearest",shuffle=True,subset='training',)
-    test_set = datagen.flow_from_directory(val_path,
-                                            target_size = (IMG_SIZE, IMG_SIZE),
-                                            batch_size = BS,
-                                            class_mode = 'categorical',color_mode="rgb",interpolation = "nearest",subset='validation')
-    
-    return training_set,test_set
+    return train_data,val_data,test_data
 
 def efficientNet_Setup(trainable=False):
     """function to create the efficient net B5 model 
@@ -155,15 +139,23 @@ def model_evaluation(model,testing_set,batch_size=BS):
     rounded_predictions=np.argmax(predictions,axis=-1)
     return rounded_predictions
 
+def get_labels_from_tfdataset(tfdataset, batched=False):
+    
+    labels = list(map(lambda x: x[1], tfdataset)) # Get labels 
+
+    if not batched:
+        return tf.concat(labels, axis=0) # concat the list of batched labels
+
+    return labels
 
 #load the data
-training_set,testing_set=load_data(0.2,True,15,True,0.2)
+training_set,validation_set,testing_set=load_data(0.2,True,15,True,0.2)
 
 #create the model instance
 model = efficientNet_Setup(True)
 
 #train the model
-history = model.fit(training_set,validation_data = testing_set,epochs=EPOCHS,verbose=1,callbacks=[learning_rate_reduction,early_stopping_monitor])
+history = model.fit(training_set,validation_data = validation_set,epochs=EPOCHS,verbose=1,callbacks=[learning_rate_reduction,early_stopping_monitor])
 
 #plot model accuracy
 plt.plot(history.history['accuracy'])
@@ -188,7 +180,12 @@ plt.show()
 model.save('trained_model_colored.h5')
 
 rp=model_evaluation(model,testing_set,32)
-test_labels=testing_set.labels
+array_test1=get_labels_from_tfdataset(testing_set)
+test_labels =np.array([])
+for i in array_test1:
+    result=np.where(i==1)[0][0]
+    test_labels=np.append(test_labels,result)
+test_labels.astype(int)
 
 cm = confusion_matrix(y_true=test_labels,y_pred=rp)
 plot_confusion_matrix(cm=cm,classes=cm_plot_labels,title="confusion matrix")
